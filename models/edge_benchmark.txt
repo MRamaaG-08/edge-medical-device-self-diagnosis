@@ -1,0 +1,5 @@
+ONNX Inference Benchmark
+Laptop mean latency: 0.108 ms
+RPi 4 estimate:      0.4 ms
+Model size:          1061.9 KB
+Edge feasible:       YES

@@ -1,0 +1,3 @@
+Threshold Rules: Acc=0.3340 F1=0.1935
+Random Forest:   Acc=0.8642   F1=0.8189   Lat=26346.435ms  Size=1811.5KB
+SVM RBF:         Acc=0.8006   F1=0.7606   Lat=0.429ms  Size=509.3KB
