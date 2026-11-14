@@ -1,0 +1,9 @@
+{
+  "n_clips": 3840,
+  "ungated_wrong": 0.7463541666666667,
+  "coverage": 0.1015625,
+  "wrong_among_shown": 0.36923076923076925,
+  "promise_alpha": 0.05,
+  "method": "M2_TRUSTRF",
+  "promise_held": false
+}
