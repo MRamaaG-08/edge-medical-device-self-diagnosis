@@ -1,0 +1,5 @@
+# Phase 2 extras, on top of requirements.txt. Python 3.12.
+pyserial>=3.5          # reading the ESP32 over USB (Ramaa)
+streamlit>=1.36        # the dashboard (Tejaswini, Ramaa)
+pandas>=2.0            # tables in the dashboard
+cryptography>=42       # encrypting stored sessions (Ramaa)
