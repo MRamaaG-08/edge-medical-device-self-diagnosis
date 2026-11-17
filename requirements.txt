@@ -1,11 +1,27 @@
-numpy>=1.24
-pandas>=2.0
-scipy>=1.10
-matplotlib>=3.7
-seaborn>=0.12
-scikit-learn>=1.3
+# Phase 1 rebuild. Target: Python 3.12.
+#
+# Versions are pinned with lower bounds that matter and upper bounds that stop
+# a surprise major release changing results mid-project. SciPy in particular is
+# bounded because Butterworth coefficient computation has changed between
+# minor versions before, and a filter that is silently different makes every
+# frequency-domain feature silently different.
+#
+#   python3.12 -m venv .venv
+#   source .venv/bin/activate          # Linux / macOS
+#   .venv\Scripts\activate             # Windows
+#   pip install -r requirements.txt
+
+numpy>=1.26,<3.0
+scipy>=1.11,<1.17
+scikit-learn>=1.4,<2.0
+matplotlib>=3.8,<4.0
+joblib>=1.3
 wfdb>=4.1
+
+# ONNX export and host benchmarking (step08). Optional; the step skips cleanly
+# if these are absent.
 skl2onnx>=1.16
-onnxruntime>=1.16
-streamlit>=1.30
-plotly>=5.18
+onnxruntime>=1.17
+
+# Test runner. Optional, tests also run standalone with plain python.
+pytest>=8.0

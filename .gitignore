@@ -1,22 +1,26 @@
-__pycache__/
-**/__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
+# Python and editors
 .venv/
-venv/
-env/
-
-.ipynb_checkpoints/
+__pycache__/
+*.pyc
 .pytest_cache/
-.mypy_cache/
+.vscode/
 
-data/generated/
-models/generated/
+# DATA NEVER GOES IN GIT (BIDMC, BUT PPG, corpora, recordings)
+data/
 
-.DS_Store
-Thumbs.db
+# secrets: the node signing key and the storage key
+secrets/
+phase2/hardware/firmware/sensor_node/node_key.h
 
-*.log
-*.tmp
+# compiled test programs
+*.exe
+phase2/edge/host_test/parity
+phase2/edge/host_test/bench_host
+phase2/edge/host_test/bench_host.c
+
+# results: only the Phase 2 evidence is tracked; each laptop's Phase 1 re-run stays local
+results/*
+!results/phase2/
+!results/figures/
+results/figures/*
+!results/figures/phase2_*
