@@ -1,0 +1,19 @@
+front end : 13 of 13 windows made, worst sample difference 2.60e-06  PASS
+
+feature              worst relative error
+mean                 1.08e-07  PASS
+variance             4.03e-09  PASS
+rms                  4.21e-09  PASS
+kurtosis             1.14e-07  PASS
+zero_crossing_rate   1.03e-09  PASS
+peak_to_peak         1.13e-07  PASS
+skewness             7.60e-08  PASS
+mean_abs_deviation   5.79e-10  PASS
+dominant_freq        2.40e-09  PASS
+spectral_entropy     6.24e-08  PASS
+ppg_band_power       9.23e-08  PASS
+power_ratio          4.87e-10  PASS
+spectral_centroid    6.86e-08  PASS
+
+forest: same class and probabilities on 13 of 13 windows  PASS
+PARITY PASSED

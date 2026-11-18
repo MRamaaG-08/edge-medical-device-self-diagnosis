@@ -1,0 +1,32 @@
+{
+  "host": {
+    "board": "laptop",
+    "frontend_us_per_sample": 0.324,
+    "features_us": 466.73,
+    "model_us": 1.52,
+    "total_us_per_window": 549.38
+  },
+  "esp32": {
+    "board": "ESP32-WROOM-32",
+    "cpu_mhz": 240,
+    "reps": 20,
+    "frontend_us_per_sample": 60.11,
+    "features_us": 282765.1,
+    "model_us": 39.2,
+    "total_us_per_window": 297830.7,
+    "window_budget_us": 2500000,
+    "free_heap_bytes": 308596,
+    "sketch_bytes": 436624,
+    "last_class": 2
+  },
+  "stm32": {
+    "board": "STM32F407 Discovery",
+    "cpu_mhz": 84.0,
+    "frontend_us_per_sample": 178.73253809523808,
+    "features_us": 697328.7619047619,
+    "model_us": 37.81190416666667,
+    "total_us_per_window": 742049.7142857143,
+    "flash_bytes": 174736,
+    "ram_bytes": 24252
+  }
+}

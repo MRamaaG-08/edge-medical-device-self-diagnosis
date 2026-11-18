@@ -1,201 +1,48 @@
-# Edge-Based Medical Device Self-Diagnosis System
+# Edge-Based Medical Device Self-Diagnosis System for Sensor Drift and Signal Degradation Detection
 
-## Overview
+Final-year project, Department of ECE, New Horizon College of Engineering, Bengaluru.
+Guides: TVS Adinarayana, Shasikiran S. Team: Mantripragada Ramaa Gayatri, U. Bhumika Asritha,
+Tejaswini Badami, Vandana H. S.
 
-This Phase 1 research project detects PPG sensor degradation conditions using signal processing, feature extraction, machine learning, and edge-inference benchmarking. The system builds a labeled dataset from clean PPG windows and simulated degradation classes, trains lightweight classifiers, and evaluates whether the best model is suitable for deployment on edge hardware.
+A pulse (PPG) sensor that diagnoses its own faults and refuses to show a heart rate it cannot trust.
 
-The five signal classes are `CLEAN`, `NOISY`, `DRIFTED`, `ATTENUATED`, and `SPIKED`.
+* **Phase 1** (software, accepted at AIHC 2027 as *Edge-Based Self-Diagnosis of PPG Sensors Using
+  Simulation-Augmented Signal Quality Classification*): BIDMC, 53 records, 4 sensor faults x 3 severities
+  injected after normalisation, 13 features, Random Forest 83.89% +/- 1.35 under record-level testing.
+* **Phase 2** (this branch): the same pipeline on real hardware. MAX30102 + ESP32-WROOM-32 node,
+  Raspberry Pi 4 hub, a certified heart-rate release gate, a telemetry drift monitor, measured cost on
+  ESP32 and STM32F407.
 
-## Problem Statement
-
-Wearable and remote medical devices often rely on PPG signals for heart-rate and oxygen-saturation monitoring. PPG quality can degrade because of noise, baseline drift, weak sensor contact, attenuation, ambient interference, or sudden spikes. If downstream systems process degraded signals without quality checks, physiological estimates can become unreliable. This project addresses that gap by classifying PPG signal quality before clinical interpretation.
-
-## Motivation
-
-The project is motivated by the need for low-cost, real-time, edge-compatible signal quality assessment in wearable healthcare devices, telemedicine systems, and portable biomedical monitors.
-
-## System Architecture
-
-1. Acquire PPG records from the PhysioNet BIDMC dataset.
-2. Extract and resample clean PPG signals to 100 Hz.
-3. Preprocess signals using filtering and normalization.
-4. Segment the signal into 5-second windows.
-5. Generate synthetic degradation classes.
-6. Extract statistical and spectral features.
-7. Train and compare threshold rules, Random Forest, and SVM classifiers.
-8. Export the Random Forest model to ONNX.
-9. Benchmark ONNX inference latency and model size for edge feasibility.
-
-## Workflow
-
-Run the pipeline from the repository root:
-
-```bash
-python src/step1_download_data.py
-python src/step2_extract_signal.py
-python src/step3_visualise_raw.py
-python src/step4_preprocess.py
-python src/step5_windowing.py
-python src/step6_degradation.py
-python src/step7_visualise_classes.py
-python src/step8_features.py
-python src/step9_feature_analysis.py
-python src/step10_train_models.py
-python src/step11_confusion_matrices.py
-python src/step12_edge_benchmark.py
+## Layout
+```
+config.py, selfdiag/, steps/, run_all.py   Phase 1 pipeline (shared, frozen)
+tests/                                     16 tests: pipeline order (11) + Phase 2 base (5)
+phase2/contracts.py, common.py, frontend.py  Phase 2 shared base (frozen)
+phase2/drift/      Vandana    front-end check, drift monitor
+phase2/gate/       Tejaswini  outcome label, certified gate, dashboard
+phase2/edge/       Bhumika    edge model, C code, parity, benchmarks
+phase2/hardware/   Ramaa      firmware, Pi hub, recording protocol, analysis
+handover/          one note per person
+models/            frozen small models and settings (in git)
+data/, secrets/    never in git
 ```
 
-## Dataset
-
-The project uses PPG records from the PhysioNet BIDMC PPG and Respiration Dataset through `wfdb`. The scripts download selected BIDMC records, identify the PPG/PLETH channel, remove missing samples, resample the signal to 100 Hz, and save generated arrays under `data/`.
-
-## Feature Extraction
-
-The feature dataset contains 13 features:
-
-`mean`, `variance`, `rms`, `kurtosis`, `zcr`, `peak_to_peak`, `skewness`, `mad`, `dominant_freq`, `spectral_entropy`, `ppg_band_power`, `power_ratio`, and `spectral_centroid`.
-
-## Machine Learning Models
-
-The training workflow compares:
-
-- Threshold-based rules as a simple baseline.
-- Random Forest for robust tabular multi-class classification.
-- SVM with RBF kernel for nonlinear class boundaries.
-
-Saved models are stored in `models/`.
-
-## Results
-
-From `models/results.txt`:
-
-| Model | Accuracy | Macro F1 | Latency | Size |
-| --- | ---: | ---: | ---: | ---: |
-| Threshold Rules | 0.3340 | 0.1935 | <1 ms | 0 KB |
-| Random Forest | 0.8642 | 0.8189 | 26346.435 ms | 1811.5 KB |
-| SVM RBF | 0.8006 | 0.7606 | 0.429 ms | 509.3 KB |
-
-Note: the Random Forest latency in the saved result appears unusually high for a single-window prediction and should be re-benchmarked on the target development machine before publication.
-
-## Edge Deployment Feasibility
-
-From `models/edge_benchmark.txt`, the ONNX Random Forest benchmark reports:
-
-- Laptop mean latency: `0.108 ms`
-- Raspberry Pi 4 estimate: `0.4 ms`
-- ONNX model size: `1061.9 KB`
-- Edge feasible: `YES`
-
-Physical Raspberry Pi deployment remains a Phase 2 task.
-
-## Folder Structure
-
-```text
-.
-|-- README.md
-|-- LICENSE
-|-- requirements.txt
-|-- .gitignore
-|-- src/                  # Numbered research pipeline scripts
-|-- data/                 # Processed arrays and feature dataset
-|-- models/               # Trained models, ONNX export, result summaries
-|-- figures/              # Generated plots and evaluation figures
-|-- docs/                 # Technical documentation and audit report
-|-- dashboard/            # Streamlit dashboard
-|-- notebooks/            # Reserved for future notebooks
-|-- assets/               # Reserved for presentation or media assets
-|-- archive/              # Legacy or redundant project artifacts
+## Setup (Windows, Python 3.12)
 ```
-
-## Installation
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt -r requirements-phase2.txt
+python -m pytest tests -q
 ```
+Raspberry Pi: `pip install -r requirements-pi.txt`.
 
-For Linux/macOS:
+## Order of work
+1. Phase 1 core: `steps/step03`, `step02`, `step04 --spec A_100hz_5s`, `step05 --spec A_100hz_5s`.
+2. Each owner's Phase 1 steps on Spec A, then their `phase2/<folder>` scripts in numbered order.
+3. Handover pull request into `phase2`; Ramaa runs `python -m phase2.check_handover <name>`.
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+Every script is run from the repository root as a module, for example
+`python -m phase2.drift.v1_frontend_check`.
 
-## Environment Setup
-
-Use Python 3.10 or later. Internet access is required for the PhysioNet download steps. Run commands from the repository root so relative paths resolve correctly.
-
-## Dependencies
-
-Dependencies are listed in `requirements.txt` and are based on actual imports in the source and dashboard files.
-
-## Execution Steps
-
-The numbered scripts are intended to be run sequentially. Later steps depend on artifacts generated by earlier steps, especially `data/clean_ppg_signal.npy`, `data/clean_ppg_preprocessed.npy`, `data/clean_windows.npy`, `data/X_all.npy`, `data/y_all.npy`, `data/feature_dataset.csv`, and saved models in `models/`.
-
-## Expected Outputs
-
-- `data/clean_ppg_signal.npy`
-- `data/clean_ppg_preprocessed.npy`
-- `data/clean_windows.npy`
-- `data/X_all.npy`
-- `data/y_all.npy`
-- `data/feature_dataset.csv`
-- `figures/raw_signal.png`
-- `figures/preprocessing_comparison.png`
-- `figures/five_classes.png`
-- `figures/feature_distributions.png`
-- `figures/correlation_matrix.png`
-- `figures/pca_plot.png`
-- `figures/confusion_matrices.png`
-- `models/scaler.pkl`
-- `models/random_forest.pkl`
-- `models/svm.pkl`
-- `models/rf_model.onnx`
-- `models/results.txt`
-- `models/edge_benchmark.txt`
-
-## Screenshots
-
-Key generated figures:
-
-- Raw PPG signal: `figures/raw_signal.png`
-- Preprocessing comparison: `figures/preprocessing_comparison.png`
-- Five signal classes: `figures/five_classes.png`
-- Feature distributions: `figures/feature_distributions.png`
-- Correlation matrix: `figures/correlation_matrix.png`
-- PCA class separability: `figures/pca_plot.png`
-- Confusion matrices: `figures/confusion_matrices.png`
-
-## Dashboard
-
-Launch the Streamlit dashboard:
-
-```bash
-streamlit run dashboard/app.py
-```
-
-The dashboard lets users select a simulated signal condition and severity, visualize the PPG waveform, inspect extracted features, and view model prediction results.
-
-`archive/dashboard_v2_legacy_broken.py` was archived because it currently contains a syntax error and is not the recommended launch target.
-
-## Future Scope
-
-- Validate models on additional datasets and real sensor fault samples.
-- Deploy the ONNX model on Raspberry Pi or a microcontroller-class edge platform.
-- Integrate live PPG acquisition hardware such as MAX30102.
-- Add automated tests for feature extraction, degradation simulation, and model inference.
-- Add model cards and experiment tracking for future Phase 2 work.
-
-## Contributors
-
-Project contributors: M Ramaa Gayatri, Tejaswini Badami, U Bhumika Asritha, and Vandana H S.
-
-## References
-
-- PhysioNet BIDMC PPG and Respiration Dataset.
-- Breiman, L. "Random forests." Machine Learning, 2001.
-- Project technical report, Phase 1.
-
+## Rules
+Data never goes in git. Shared files change only after a group decision. Open-source tools only.
