@@ -1,1 +1,0 @@
-{"board":"laptop","frontend_us_per_sample":0.324,"features_us":466.73,"model_us":1.52,"total_us_per_window":549.38}
