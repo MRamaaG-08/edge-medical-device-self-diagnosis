@@ -1,0 +1,14 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4876
+ho 0 tail 12 room 4
+load:0x40078000,len:16532
+load:0x40080400,len:3500
+entry 0x400805b4
+=== ESP32 edge benchmark (microseconds) ===
+{"board":"ESP32-WROOM-32","cpu_mhz":240,"reps":20,"frontend_us_per_sample":60.11,"features_us":282765.1,"model_us":39.2,"total_us_per_window":297830.7,"window_budget_us":2500000,"free_heap_bytes":308596,"sketch_bytes":436624,"last_class":2}
+busy 11.913% of the time

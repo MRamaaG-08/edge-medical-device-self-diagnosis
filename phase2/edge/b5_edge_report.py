@@ -22,17 +22,43 @@ from phase2.common import ensure_dir
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = ensure_dir(os.path.join(config.RESULTS, "phase2"))
+
 HOST_MAIN = r'''
 #include <stdio.h>
-#include <time.h>
+#include <stdint.h>
+#include <windows.h>
 #include "edge_bench.h"
-static uint32_t clock_us(void){ struct timespec t; timespec_get(&t, TIME_UTC);
-  return (uint32_t)(t.tv_sec * 1000000ull + t.tv_nsec / 1000); }
-int main(void){ edge_bench_result_t r; edge_bench_run(clock_us, 200, &r);
-  printf("{\"board\":\"laptop\",\"frontend_us_per_sample\":%.3f,\"features_us\":%.2f,"
-         "\"model_us\":%.2f,\"total_us_per_window\":%.2f}\n",
-         r.frontend_per_sample, r.features, r.model, r.total_per_window); return 0; }
+
+static uint32_t clock_us(void)
+{
+    static LARGE_INTEGER frequency;
+    LARGE_INTEGER counter;
+
+    if (frequency.QuadPart == 0)
+        QueryPerformanceFrequency(&frequency);
+
+    QueryPerformanceCounter(&counter);
+
+    return (uint32_t)(
+        (counter.QuadPart * 1000000ULL) / frequency.QuadPart
+    );
+}
+
+int main(void)
+{
+    edge_bench_result_t r;
+    edge_bench_run(clock_us, 200, &r);
+
+    printf("{\"board\":\"laptop\",\"frontend_us_per_sample\":%.3f,"
+           "\"features_us\":%.2f,\"model_us\":%.2f,"
+           "\"total_us_per_window\":%.2f}\n",
+           r.frontend_per_sample, r.features,
+           r.model, r.total_per_window);
+
+    return 0;
+}
 '''
+
 rows = {}
 gcc = shutil.which("gcc")
 if gcc:

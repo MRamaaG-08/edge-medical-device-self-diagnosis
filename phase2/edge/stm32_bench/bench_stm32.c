@@ -5,6 +5,7 @@
 #include "stm32f4xx.h"
 #include "edge_bench.h"
 
+
 volatile edge_bench_result_t bench;
 volatile uint32_t bench_cpu_hz;
 volatile uint32_t bench_done = 0;
