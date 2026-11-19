@@ -61,6 +61,22 @@ log_path = os.path.join(ensure_dir("data/sessions"), f"{a.session}.jsonl")
 log = open(log_path, "a")
 ser = None
 lock = threading.Lock()
+status_path = os.path.join("data/sessions", f"{a.session}_status.json")
+_last_status = [0.0]
+
+
+def write_status(state, **extra):
+    """A tiny side file the dashboard reads: calibrating / streaming, and the security counters."""
+    now = time.time()
+    if state == "calibrating" and now - _last_status[0] < 0.9:
+        return
+    _last_status[0] = now
+    st = {"t": round(now, 2), "state": state, "session": a.session, "rejected": ver.rejected,
+          "accepted": n_ok, "mode": "replay" if a.replay else "live", **extra}
+    tmp = status_path + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(st, fh)
+    os.replace(tmp, status_path)
 
 
 def run_protocol(t0):
@@ -123,9 +139,11 @@ try:
         pkt = ver.check(line)
         if pkt is None:
             print(f"REJECTED (tampered or replayed). Total rejected: {ver.rejected}")
+            write_status("streaming" if n_ok else "calibrating", last_reject_t=round(time.time(), 2))
             continue
         if pkt.get("state", 2) < 2:
             print(f"  calibrating ... {pkt['t_ms'] / 1000:5.0f} s (keep still)", end="\r")
+            write_status("calibrating", node_s=pkt["t_ms"] / 1000, led=pkt.get("led"))
             continue
         t_start = time.perf_counter()
         w = np.asarray(pkt["w"], dtype=float)
@@ -152,6 +170,7 @@ try:
         if not a.no_window:
             rec["window"] = pkt["w"]
         log.write(json.dumps(rec) + "\n"); log.flush()
+        write_status("streaming", seq=pkt["seq"])
         print(f"seq {pkt['seq']:5d}  chip {node_class:<10} pi {str(hub_class):<10} "
               f"trust {('%5.2f' % trust) if trust is not None else '  -  '}  "
               f"{('HR %5.1f' % hr) if released else 'HR withheld'}  {'DRIFT ' + ','.join(alarms) if alarms else ''}")
@@ -159,5 +178,9 @@ except KeyboardInterrupt:
     pass
 finally:
     log.close()
+    try:
+        write_status("stopped")
+    except Exception:                                      # noqa: BLE001
+        pass
     agree = f"{n_agree / n_ok:.1%}" if (n_ok and edge is not None) else "n/a"
     print(f"\n{n_ok} windows logged to {log_path}; chip and Pi agree on {agree}; {ver.rejected} lines rejected")
